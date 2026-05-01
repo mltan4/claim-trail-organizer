@@ -14,7 +14,213 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_type: string
+          claim_week_id: string | null
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          date: string
+          id: string
+          is_complete: boolean
+          job_title: string | null
+          job_url: string | null
+          method: string | null
+          notes: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          claim_week_id?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          is_complete?: boolean
+          job_title?: string | null
+          job_url?: string | null
+          method?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          claim_week_id?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          is_complete?: boolean
+          job_title?: string | null
+          job_url?: string | null
+          method?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_claim_week_id_fkey"
+            columns: ["claim_week_id"]
+            isOneToOne: false
+            referencedRelation: "claim_weeks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_weeks: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          required_activity_count: number
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          required_activity_count?: number
+          start_date: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          required_activity_count?: number
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evidence_files: {
+        Row: {
+          activity_id: string
+          file_name: string
+          file_type: string | null
+          id: string
+          storage_path: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          file_name: string
+          file_type?: string | null
+          id?: string
+          storage_path: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          file_name?: string
+          file_type?: string | null
+          id?: string
+          storage_path?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_files_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exports: {
+        Row: {
+          claim_week_id: string | null
+          created_at: string
+          export_type: string
+          id: string
+          storage_path: string | null
+          user_id: string
+        }
+        Insert: {
+          claim_week_id?: string | null
+          created_at?: string
+          export_type: string
+          id?: string
+          storage_path?: string | null
+          user_id: string
+        }
+        Update: {
+          claim_week_id?: string | null
+          created_at?: string
+          export_type?: string
+          id?: string
+          storage_path?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exports_claim_week_id_fkey"
+            columns: ["claim_week_id"]
+            isOneToOne: false
+            referencedRelation: "claim_weeks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          reminder_day: number
+          reminder_time: string
+          state: string
+          updated_at: string
+          week_start_day: number
+          weekly_goal: number
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string | null
+          reminder_day?: number
+          reminder_time?: string
+          state?: string
+          updated_at?: string
+          week_start_day?: number
+          weekly_goal?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          reminder_day?: number
+          reminder_time?: string
+          state?: string
+          updated_at?: string
+          week_start_day?: number
+          weekly_goal?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
