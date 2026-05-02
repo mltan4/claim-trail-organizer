@@ -34,6 +34,8 @@ export default function SheetView() {
   const [sheetsUrl, setSheetsUrl] = useState("");
 
   const debounceTimers = useRef<Record<string, number>>({});
+  const enrichTimers = useRef<Record<string, number>>({});
+  const enrichedKeys = useRef<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   const goal = profile?.weekly_goal ?? 3;
