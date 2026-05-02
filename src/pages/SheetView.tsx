@@ -34,6 +34,8 @@ export default function SheetView() {
   const [sheetsUrl, setSheetsUrl] = useState("");
 
   const debounceTimers = useRef<Record<string, number>>({});
+  const enrichTimers = useRef<Record<string, number>>({});
+  const enrichedKeys = useRef<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   const goal = profile?.weekly_goal ?? 3;
@@ -70,10 +72,76 @@ export default function SheetView() {
   const updateExisting = (id: string, key: keyof Activity, value: any) => {
     setDrafts((d) => ({ ...d, [id]: { ...d[id], [key]: value } }));
     scheduleSave(id, { [key]: value });
+    if (key === "company_name" || key === "employer_city" || key === "employer_state") {
+      const a = activities.find((x) => x.id === id);
+      const merged = { ...a, ...drafts[id], [key]: value } as Partial<Activity>;
+      scheduleAutoEnrich(id, merged);
+    }
   };
 
   const updateNew = (key: keyof Activity, value: any) => {
-    setDraftNew((d) => ({ ...d, [key]: value }));
+    setDraftNew((d) => {
+      const next = { ...d, [key]: value };
+      if (key === "company_name" || key === "employer_city" || key === "employer_state") {
+        scheduleAutoEnrich(NEW_ROW_KEY, next);
+      }
+      return next;
+    });
+  };
+
+  // Auto-enrich employer info from web after the user pauses typing the company.
+  // Only runs when contact fields are empty so we never overwrite user-entered data.
+  const scheduleAutoEnrich = (key: string, row: Partial<Activity>) => {
+    if (enrichTimers.current[key]) window.clearTimeout(enrichTimers.current[key]);
+    enrichTimers.current[key] = window.setTimeout(() => runAutoEnrich(key, row), 1200);
+  };
+
+  const runAutoEnrich = async (key: string, row: Partial<Activity>) => {
+    const company = row.company_name?.trim();
+    if (!company || company.length < 2) return;
+    const alreadyFilled = !!(row.employer_address || row.employer_website || row.employer_phone);
+    if (alreadyFilled) return;
+    const dedupe = `${company.toLowerCase()}|${(row.employer_city ?? "").toLowerCase()}|${(row.employer_state ?? "").toLowerCase()}`;
+    if (enrichedKeys.current.has(`${key}:${dedupe}`)) return;
+    enrichedKeys.current.add(`${key}:${dedupe}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-employer", {
+        body: { company, city: row.employer_city, state: row.employer_state },
+      });
+      if (error || (data as any)?.error) return;
+      const patch: Partial<Activity> = {
+        employer_address: (data as any).address || undefined,
+        employer_city: (data as any).city || row.employer_city || undefined,
+        employer_state: (data as any).state || row.employer_state || undefined,
+        employer_website: (data as any).website || undefined,
+        employer_phone: (data as any).phone || undefined,
+      };
+      // Drop empty values so we don't clobber anything.
+      Object.keys(patch).forEach((k) => { if (!(patch as any)[k]) delete (patch as any)[k]; });
+      if (!Object.keys(patch).length) return;
+
+      if (key === NEW_ROW_KEY) {
+        setDraftNew((d) => {
+          const next = { ...d };
+          for (const [k, v] of Object.entries(patch)) {
+            if (!(next as any)[k]) (next as any)[k] = v;
+          }
+          return next;
+        });
+      } else {
+        const current = activities.find((a) => a.id === key);
+        if (!current) return;
+        const merged: Partial<Activity> = { ...current };
+        for (const [k, v] of Object.entries(patch)) {
+          if (!(merged as any)[k]) (merged as any)[k] = v;
+        }
+        setDrafts((d) => ({ ...d, [key]: { ...d[key], ...patch } }));
+        try { await save.mutateAsync(merged as any); } catch { /* silent */ }
+      }
+      toast.success(`Auto-filled employer info for ${company}`);
+    } catch {
+      // silent — user can still click the Sparkles button manually
+    }
   };
 
   const commitNew = async () => {
