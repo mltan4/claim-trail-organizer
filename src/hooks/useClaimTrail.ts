@@ -90,38 +90,42 @@ export function useActivities() {
   });
 }
 
+async function buildActivityPayload(userId: string, input: Partial<Activity>) {
+  const { data: profile } = await supabase.from("profiles").select("week_start_day, weekly_goal").eq("id", userId).single();
+  const startDay = profile?.week_start_day ?? 0;
+  const goal = profile?.weekly_goal ?? 3;
+  const week = await ensureClaimWeek(userId, new Date(input.date! + "T00:00:00"), startDay, goal);
+  return {
+    user_id: userId,
+    claim_week_id: week.id,
+    date: input.date!,
+    activity_type: input.activity_type!,
+    company_name: input.company_name ?? null,
+    job_title: input.job_title ?? null,
+    job_url: input.job_url ?? null,
+    contact_name: input.contact_name ?? null,
+    contact_email: input.contact_email ?? null,
+    contact_phone: input.contact_phone ?? null,
+    method: input.method ?? null,
+    status: input.status ?? null,
+    notes: input.notes ?? null,
+    contact_type: input.contact_type ?? null,
+    employer_address: input.employer_address ?? null,
+    employer_city: input.employer_city ?? null,
+    employer_state: input.employer_state ?? null,
+    employer_website: input.employer_website ?? null,
+    employer_phone: input.employer_phone ?? null,
+    is_complete: isActivityComplete(input),
+  };
+}
+
 export function useSaveActivity() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: Partial<Activity> & { id?: string }) => {
       if (!user) throw new Error("Not signed in");
-      const { data: profile } = await supabase.from("profiles").select("week_start_day, weekly_goal").eq("id", user.id).single();
-      const startDay = profile?.week_start_day ?? 0;
-      const goal = profile?.weekly_goal ?? 3;
-      const week = await ensureClaimWeek(user.id, new Date(input.date! + "T00:00:00"), startDay, goal);
-      const payload = {
-        user_id: user.id,
-        claim_week_id: week.id,
-        date: input.date!,
-        activity_type: input.activity_type!,
-        company_name: input.company_name ?? null,
-        job_title: input.job_title ?? null,
-        job_url: input.job_url ?? null,
-        contact_name: input.contact_name ?? null,
-        contact_email: input.contact_email ?? null,
-        contact_phone: input.contact_phone ?? null,
-        method: input.method ?? null,
-        status: input.status ?? null,
-        notes: input.notes ?? null,
-        contact_type: input.contact_type ?? null,
-        employer_address: input.employer_address ?? null,
-        employer_city: input.employer_city ?? null,
-        employer_state: input.employer_state ?? null,
-        employer_website: input.employer_website ?? null,
-        employer_phone: input.employer_phone ?? null,
-        is_complete: isActivityComplete(input),
-      };
+      const payload = await buildActivityPayload(user.id, input);
       if (input.id) {
         const { data, error } = await supabase.from("activities").update(payload).eq("id", input.id).select().single();
         if (error) throw error;
@@ -136,6 +140,51 @@ export function useSaveActivity() {
       qc.invalidateQueries({ queryKey: ["activities"] });
       qc.invalidateQueries({ queryKey: ["weeks"] });
       toast.success("Activity saved");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+}
+
+export function useSaveActivitySilent() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<Activity> & { id?: string }) => {
+      if (!user) throw new Error("Not signed in");
+      const payload = await buildActivityPayload(user.id, input);
+      if (input.id) {
+        const { data, error } = await supabase.from("activities").update(payload).eq("id", input.id).select().single();
+        if (error) throw error;
+        return data;
+      } else {
+        const { data, error } = await supabase.from("activities").insert(payload).select().single();
+        if (error) throw error;
+        return data;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["activities"] });
+      qc.invalidateQueries({ queryKey: ["weeks"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+}
+
+export function useBulkInsertActivities() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: Partial<Activity>[]) => {
+      if (!user) throw new Error("Not signed in");
+      const payloads = await Promise.all(rows.map((r) => buildActivityPayload(user.id, r)));
+      const { data, error } = await supabase.from("activities").insert(payloads).select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (rows) => {
+      qc.invalidateQueries({ queryKey: ["activities"] });
+      qc.invalidateQueries({ queryKey: ["weeks"] });
+      toast.success(`Imported ${rows?.length ?? 0} activities`);
     },
     onError: (e: any) => toast.error(e.message),
   });
