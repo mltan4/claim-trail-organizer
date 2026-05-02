@@ -114,6 +114,12 @@ export function useSaveActivity() {
         method: input.method ?? null,
         status: input.status ?? null,
         notes: input.notes ?? null,
+        contact_type: input.contact_type ?? null,
+        employer_address: input.employer_address ?? null,
+        employer_city: input.employer_city ?? null,
+        employer_state: input.employer_state ?? null,
+        employer_website: input.employer_website ?? null,
+        employer_phone: input.employer_phone ?? null,
         is_complete: isActivityComplete(input),
       };
       if (input.id) {
