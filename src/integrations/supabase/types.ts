@@ -22,8 +22,14 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          contact_type: string | null
           created_at: string
           date: string
+          employer_address: string | null
+          employer_city: string | null
+          employer_phone: string | null
+          employer_state: string | null
+          employer_website: string | null
           id: string
           is_complete: boolean
           job_title: string | null
@@ -41,8 +47,14 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contact_type?: string | null
           created_at?: string
           date: string
+          employer_address?: string | null
+          employer_city?: string | null
+          employer_phone?: string | null
+          employer_state?: string | null
+          employer_website?: string | null
           id?: string
           is_complete?: boolean
           job_title?: string | null
@@ -60,8 +72,14 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contact_type?: string | null
           created_at?: string
           date?: string
+          employer_address?: string | null
+          employer_city?: string | null
+          employer_phone?: string | null
+          employer_state?: string | null
+          employer_website?: string | null
           id?: string
           is_complete?: boolean
           job_title?: string | null
