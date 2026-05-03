@@ -358,6 +358,9 @@ export default function SheetView() {
               {/* Always-present blank "new row" */}
               <tr className="bg-primary-soft/20 font-medium">
                 <td className="sticky left-0 bg-primary-soft/40 px-2 py-1 border-b border-r border-border text-xs text-primary-deep">+</td>
+                <td className="px-2 py-1.5 border-b border-r border-border text-sm text-muted-foreground whitespace-nowrap bg-muted/20">
+                  {draftNew.date ? fmtDate(weekEndingFriday(draftNew.date)) : "—"}
+                </td>
                 {SHEET_COLUMNS.map((c) => (
                   <td key={c.key} className="border-b border-r border-border p-0">
                     <CellEditor
