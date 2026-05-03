@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { Activity, SHEET_COLUMNS, DEFAULT_NEW_ROW, isActivityComplete, isoDate, getWeekRange, weekLabel, missingFields } from "@/lib/claimtrail";
+import { Activity, SHEET_COLUMNS, DEFAULT_NEW_ROW, isActivityComplete, isoDate, getWeekRange, weekLabel, missingFields, weekEndingFriday, fmtDate } from "@/lib/claimtrail";
 import { useActivities, useDeleteActivity, useProfile, useSaveActivitySilent, useBulkInsertActivities, useEvidence, useUploadEvidence, useDeleteEvidence, getEvidenceSignedUrl } from "@/hooks/useClaimTrail";
 import { exportActivitiesCSV } from "@/lib/exports";
 import { exportXLSX, exportToNewGoogleSheet, appendToGoogleSheet, importFromGoogleSheet, parseSheetRows, dedupeAgainstExisting, readFileAsRows } from "@/lib/sheetIO";
