@@ -317,9 +317,15 @@ export default function SheetView() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a, idx) => (
+              {filtered.map((a, idx) => {
+                const dateVal = (drafts[a.id]?.date as string | undefined) ?? a.date;
+                const we = weekEndingFriday(dateVal);
+                return (
                 <tr key={a.id} className={cn("hover:bg-muted/30", a.is_complete ? "" : "bg-warning/5")}>
                   <td className="sticky left-0 bg-card px-2 py-1 border-b border-r border-border text-xs text-muted-foreground">{idx + 1}</td>
+                  <td className="px-2 py-1.5 border-b border-r border-border text-sm text-muted-foreground whitespace-nowrap bg-muted/20">
+                    {we ? fmtDate(we) : "—"}
+                  </td>
                   {SHEET_COLUMNS.map((c) => (
                     <td key={c.key} className="border-b border-r border-border p-0">
                       <CellEditor
