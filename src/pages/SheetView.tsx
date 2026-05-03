@@ -305,6 +305,9 @@ export default function SheetView() {
             <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
               <tr>
                 <th className="sticky left-0 z-20 bg-muted/90 px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border w-10">#</th>
+                <th className="px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border whitespace-nowrap" style={{ minWidth: 130 }}>
+                  Week ending
+                </th>
                 {SHEET_COLUMNS.map((c) => (
                   <th key={c.key} style={{ minWidth: c.width }} className="px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border whitespace-nowrap">
                     {c.label}{c.required && <span className="text-destructive ml-0.5">*</span>}
