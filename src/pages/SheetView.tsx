@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { Activity, SHEET_COLUMNS, DEFAULT_NEW_ROW, isActivityComplete, isoDate, getWeekRange, weekLabel, missingFields } from "@/lib/claimtrail";
+import { Activity, SHEET_COLUMNS, DEFAULT_NEW_ROW, isActivityComplete, isoDate, getWeekRange, weekLabel, missingFields, weekEndingFriday, fmtDate } from "@/lib/claimtrail";
 import { useActivities, useDeleteActivity, useProfile, useSaveActivitySilent, useBulkInsertActivities, useEvidence, useUploadEvidence, useDeleteEvidence, getEvidenceSignedUrl } from "@/hooks/useClaimTrail";
 import { exportActivitiesCSV } from "@/lib/exports";
 import { exportXLSX, exportToNewGoogleSheet, appendToGoogleSheet, importFromGoogleSheet, parseSheetRows, dedupeAgainstExisting, readFileAsRows } from "@/lib/sheetIO";
@@ -305,6 +305,9 @@ export default function SheetView() {
             <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
               <tr>
                 <th className="sticky left-0 z-20 bg-muted/90 px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border w-10">#</th>
+                <th className="px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border whitespace-nowrap" style={{ minWidth: 130 }}>
+                  Week ending
+                </th>
                 {SHEET_COLUMNS.map((c) => (
                   <th key={c.key} style={{ minWidth: c.width }} className="px-2 py-2 text-left font-semibold text-xs text-muted-foreground border-b border-r border-border whitespace-nowrap">
                     {c.label}{c.required && <span className="text-destructive ml-0.5">*</span>}
@@ -314,9 +317,15 @@ export default function SheetView() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a, idx) => (
+              {filtered.map((a, idx) => {
+                const dateVal = (drafts[a.id]?.date as string | undefined) ?? a.date;
+                const we = weekEndingFriday(dateVal);
+                return (
                 <tr key={a.id} className={cn("hover:bg-muted/30", a.is_complete ? "" : "bg-warning/5")}>
                   <td className="sticky left-0 bg-card px-2 py-1 border-b border-r border-border text-xs text-muted-foreground">{idx + 1}</td>
+                  <td className="px-2 py-1.5 border-b border-r border-border text-sm text-muted-foreground whitespace-nowrap bg-muted/20">
+                    {we ? fmtDate(we) : "—"}
+                  </td>
                   {SHEET_COLUMNS.map((c) => (
                     <td key={c.key} className="border-b border-r border-border p-0">
                       <CellEditor
@@ -343,11 +352,15 @@ export default function SheetView() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
 
               {/* Always-present blank "new row" */}
               <tr className="bg-primary-soft/20 font-medium">
                 <td className="sticky left-0 bg-primary-soft/40 px-2 py-1 border-b border-r border-border text-xs text-primary-deep">+</td>
+                <td className="px-2 py-1.5 border-b border-r border-border text-sm text-muted-foreground whitespace-nowrap bg-muted/20">
+                  {draftNew.date ? fmtDate(weekEndingFriday(draftNew.date)) : "—"}
+                </td>
                 {SHEET_COLUMNS.map((c) => (
                   <td key={c.key} className="border-b border-r border-border p-0">
                     <CellEditor

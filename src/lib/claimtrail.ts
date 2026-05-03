@@ -132,6 +132,18 @@ export function weekLabel(start: string, end: string): string {
   return `${fmtDate(start)} – ${fmtDate(end)}`;
 }
 
+// Friday of the Sunday–Saturday week containing the given date (ISO YYYY-MM-DD).
+export function weekEndingFriday(dateISO: string | null | undefined): string {
+  if (!dateISO) return "";
+  const d = new Date(dateISO + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  const dow = d.getDay(); // 0 Sun … 6 Sat
+  let offset = 5 - dow;
+  if (offset < 0) offset += 7;
+  d.setDate(d.getDate() + offset);
+  return isoDate(d);
+}
+
 // Spreadsheet column model — order matters for CSV/XLSX
 export type SheetCol = {
   key: keyof Activity;
