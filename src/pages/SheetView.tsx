@@ -352,7 +352,8 @@ export default function SheetView() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
 
               {/* Always-present blank "new row" */}
               <tr className="bg-primary-soft/20 font-medium">
