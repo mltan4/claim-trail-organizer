@@ -373,7 +373,14 @@ export default function SheetView() {
                   </td>
                 ))}
                 <td className="border-b border-border p-1 text-xs text-muted-foreground">
-                  {savingIds.has(NEW_ROW_KEY) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <span className="px-1.5">Auto-saves</span>}
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" title="Search the web and fill in address, city, state, website, and phone"
+                      onClick={() => { if (draftNew.company_name?.trim()) runAutoEnrich(NEW_ROW_KEY, draftNew); else toast.error("Add an Employer name first"); }}>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Autofill
+                    </Button>
+                    {savingIds.has(NEW_ROW_KEY) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  </div>
                 </td>
               </tr>
             </tbody>
