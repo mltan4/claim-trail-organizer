@@ -31,7 +31,9 @@ export default function SheetView() {
   const [evidenceFor, setEvidenceFor] = useState<Activity | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [sheetsDialog, setSheetsDialog] = useState<null | "import" | "append">(null);
-  const [sheetsUrl, setSheetsUrl] = useState("");
+  const [sheetsUrl, setSheetsUrl] = useState(() => {
+    try { return localStorage.getItem("claimtrail.lastSheetsUrl") ?? ""; } catch { return ""; }
+  });
 
   const debounceTimers = useRef<Record<string, number>>({});
   const enrichTimers = useRef<Record<string, number>>({});
@@ -47,12 +49,15 @@ export default function SheetView() {
   const ready = completeThisWeek >= goal;
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return activities;
-    const q = search.trim().toLowerCase();
-    return activities.filter((a) =>
-      [a.company_name, a.job_title, a.activity_type, a.method, a.contact_type, a.status, a.notes, a.contact_name, a.contact_email, a.employer_city]
-        .some((v) => v && String(v).toLowerCase().includes(q))
-    );
+    const base = search.trim()
+      ? activities.filter((a) => {
+          const q = search.trim().toLowerCase();
+          return [a.company_name, a.job_title, a.activity_type, a.method, a.contact_type, a.status, a.notes, a.contact_name, a.contact_email, a.employer_city]
+            .some((v) => v && String(v).toLowerCase().includes(q));
+        })
+      : activities;
+    // Sort ascending by contact date so the most recent row is at the bottom (just above the new-row).
+    return [...base].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   }, [activities, search]);
 
   // Auto-save with debounce
@@ -226,8 +231,8 @@ export default function SheetView() {
       if (dupes) msg += `, skipped ${dupes} duplicate${dupes === 1 ? "" : "s"}`;
       if (skipped) msg += `, ignored ${skipped} incomplete row${skipped === 1 ? "" : "s"}`;
       toast.success(msg);
+      try { localStorage.setItem("claimtrail.lastSheetsUrl", sheetsUrl.trim()); } catch {}
       setSheetsDialog(null);
-      setSheetsUrl("");
     } catch (err: any) {
       toast.error(err.message ?? "Google Sheets import failed");
     }
@@ -246,8 +251,9 @@ export default function SheetView() {
     if (!sheetsUrl.trim()) return;
     try {
       await appendToGoogleSheet(activities, sheetsUrl.trim());
+      try { localStorage.setItem("claimtrail.lastSheetsUrl", sheetsUrl.trim()); } catch {}
       toast.success("Appended to Google Sheet");
-      setSheetsDialog(null); setSheetsUrl("");
+      setSheetsDialog(null);
     } catch (e: any) { toast.error(e.message ?? "Append failed"); }
   };
 
@@ -404,7 +410,7 @@ export default function SheetView() {
       </Dialog>
 
       {/* Google Sheets dialog */}
-      <Dialog open={!!sheetsDialog} onOpenChange={(o) => { if (!o) { setSheetsDialog(null); setSheetsUrl(""); } }}>
+      <Dialog open={!!sheetsDialog} onOpenChange={(o) => { if (!o) setSheetsDialog(null); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{sheetsDialog === "import" ? "Import from Google Sheet" : "Append to Google Sheet"}</DialogTitle>
@@ -415,7 +421,7 @@ export default function SheetView() {
           </DialogHeader>
           <Input placeholder="https://docs.google.com/spreadsheets/d/..." value={sheetsUrl} onChange={(e) => setSheetsUrl(e.target.value)} />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setSheetsDialog(null); setSheetsUrl(""); }}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setSheetsDialog(null)}>Cancel</Button>
             <Button onClick={sheetsDialog === "import" ? importGoogleSheet : appendToSheet}>
               <FileSpreadsheet className="h-4 w-4 mr-1.5" />
               {sheetsDialog === "import" ? "Import" : "Append"}
