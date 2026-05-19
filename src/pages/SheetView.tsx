@@ -231,8 +231,8 @@ export default function SheetView() {
       if (dupes) msg += `, skipped ${dupes} duplicate${dupes === 1 ? "" : "s"}`;
       if (skipped) msg += `, ignored ${skipped} incomplete row${skipped === 1 ? "" : "s"}`;
       toast.success(msg);
+      try { localStorage.setItem("claimtrail.lastSheetsUrl", sheetsUrl.trim()); } catch {}
       setSheetsDialog(null);
-      setSheetsUrl("");
     } catch (err: any) {
       toast.error(err.message ?? "Google Sheets import failed");
     }
