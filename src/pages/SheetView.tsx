@@ -31,7 +31,9 @@ export default function SheetView() {
   const [evidenceFor, setEvidenceFor] = useState<Activity | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [sheetsDialog, setSheetsDialog] = useState<null | "import" | "append">(null);
-  const [sheetsUrl, setSheetsUrl] = useState("");
+  const [sheetsUrl, setSheetsUrl] = useState(() => {
+    try { return localStorage.getItem("claimtrail.lastSheetsUrl") ?? ""; } catch { return ""; }
+  });
 
   const debounceTimers = useRef<Record<string, number>>({});
   const enrichTimers = useRef<Record<string, number>>({});
