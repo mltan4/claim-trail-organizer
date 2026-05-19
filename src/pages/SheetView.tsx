@@ -421,7 +421,7 @@ export default function SheetView() {
           </DialogHeader>
           <Input placeholder="https://docs.google.com/spreadsheets/d/..." value={sheetsUrl} onChange={(e) => setSheetsUrl(e.target.value)} />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setSheetsDialog(null); setSheetsUrl(""); }}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setSheetsDialog(null)}>Cancel</Button>
             <Button onClick={sheetsDialog === "import" ? importGoogleSheet : appendToSheet}>
               <FileSpreadsheet className="h-4 w-4 mr-1.5" />
               {sheetsDialog === "import" ? "Import" : "Append"}
