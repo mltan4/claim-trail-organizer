@@ -49,12 +49,15 @@ export default function SheetView() {
   const ready = completeThisWeek >= goal;
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return activities;
-    const q = search.trim().toLowerCase();
-    return activities.filter((a) =>
-      [a.company_name, a.job_title, a.activity_type, a.method, a.contact_type, a.status, a.notes, a.contact_name, a.contact_email, a.employer_city]
-        .some((v) => v && String(v).toLowerCase().includes(q))
-    );
+    const base = search.trim()
+      ? activities.filter((a) => {
+          const q = search.trim().toLowerCase();
+          return [a.company_name, a.job_title, a.activity_type, a.method, a.contact_type, a.status, a.notes, a.contact_name, a.contact_email, a.employer_city]
+            .some((v) => v && String(v).toLowerCase().includes(q));
+        })
+      : activities;
+    // Sort ascending by contact date so the most recent row is at the bottom (just above the new-row).
+    return [...base].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   }, [activities, search]);
 
   // Auto-save with debounce
