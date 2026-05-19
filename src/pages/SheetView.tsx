@@ -251,8 +251,9 @@ export default function SheetView() {
     if (!sheetsUrl.trim()) return;
     try {
       await appendToGoogleSheet(activities, sheetsUrl.trim());
+      try { localStorage.setItem("claimtrail.lastSheetsUrl", sheetsUrl.trim()); } catch {}
       toast.success("Appended to Google Sheet");
-      setSheetsDialog(null); setSheetsUrl("");
+      setSheetsDialog(null);
     } catch (e: any) { toast.error(e.message ?? "Append failed"); }
   };
 
