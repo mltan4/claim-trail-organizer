@@ -410,7 +410,7 @@ export default function SheetView() {
       </Dialog>
 
       {/* Google Sheets dialog */}
-      <Dialog open={!!sheetsDialog} onOpenChange={(o) => { if (!o) { setSheetsDialog(null); setSheetsUrl(""); } }}>
+      <Dialog open={!!sheetsDialog} onOpenChange={(o) => { if (!o) setSheetsDialog(null); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{sheetsDialog === "import" ? "Import from Google Sheet" : "Append to Google Sheet"}</DialogTitle>
